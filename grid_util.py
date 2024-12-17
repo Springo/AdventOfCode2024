@@ -152,3 +152,51 @@ def rotate(grid, dir=1):
             for j in range(len(new_grid[i])):
                 new_grid[i][j] = grid[j][len(grid[0]) - i - 1]
     return new_grid
+
+
+def grid_to_graph(grid, start_i, start_j, path_blocks=None, forced_nodes=None):
+    if path_blocks is None:
+        path_blocks = {'.'}
+    if forced_nodes is None:
+        forced_nodes = set()
+    path_blocks = path_blocks.union(forced_nodes)
+
+    adj_list = dict()
+    q = [(start_i, start_j)]
+    explored = dict()
+    explored[(start_i, start_j)] = True
+    while len(q) > 0:
+        i, j = q.pop(0)
+        neigh = get_neighbors(grid, i, j, orth=True)
+        new_node = False
+        for k in range(len(neigh)):
+            if (neigh[(k - 1) % len(neigh)] in path_blocks and neigh[k] in path_blocks) or grid[i][j] in forced_nodes:
+                new_node = True
+
+        if new_node:
+            adj_list[(i, j)] = dict()
+
+        for i2, j2 in get_neighbors(grid, i, j, orth=True, indices=True):
+            if grid[i2][j2] in path_blocks:
+                if (i2, j2) not in explored:
+                    q.append((i2, j2))
+                    explored[(i2, j2)] = True
+
+    dirs = [0, 2, 4, 6]
+    for i, j in adj_list:
+        for dir in dirs:
+            step = 1
+            done = False
+            while not done:
+                i2, j2 = grid_project(grid, i, j, dir, step)
+                if i2 is None:
+                    done = True
+                elif grid[i2][j2] not in path_blocks:
+                    done = True
+                elif (i2, j2) in adj_list:
+                    adj_list[(i, j)][(i2, j2)] = step
+                    adj_list[(i2, j2)][(i, j)] = step
+                    done = True
+                step += 1
+
+    return adj_list

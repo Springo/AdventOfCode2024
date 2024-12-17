@@ -1,3 +1,6 @@
+import heapq
+
+
 def top_sort(adj_list):
     visited = dict()
     for key in adj_list:
@@ -85,6 +88,33 @@ def bfs(adj_list, key, target):
                 q.append((id, dist + 1))
                 explored[id] = True
     return -1
+
+
+def dijkstra(adj_list, start_i, start_j):
+    q = [(0, start_i, start_j)]
+    dist = dict()
+    explored = dict()
+    explored[(start_i, start_j)] = True
+
+    while len(q) > 0:
+        cost, i, j = heapq.heappop(q)
+        if (i, j) not in dist:
+            dist[(i, j)] = cost
+        for ni, nj in adj_list[(i, j)]:
+            n_cost = adj_list[(i, j)][(ni, nj)]
+            n_cost += cost
+
+            if (ni, nj) not in explored:
+                heapq.heappush(q, (n_cost, ni, nj))
+                explored[(ni, nj)] = True
+            else:
+                for k in range(len(q)):
+                    f_cost, fi, fj = q[k]
+                    if fi == ni and fj == nj:
+                        if n_cost < f_cost:
+                            q[k] = (n_cost, fi, fj)
+                            heapq.heapify(q)
+    return dist
 
 
 if __name__ == "__main__":
