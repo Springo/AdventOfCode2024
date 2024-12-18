@@ -94,7 +94,6 @@ def invert_program(program):
     return options
 
 
-
 a = 33024962
 b = 0
 c = 0
